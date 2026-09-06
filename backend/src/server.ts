@@ -1,13 +1,14 @@
 import express, { Request, Response } from "express";
+import { env } from "./config/env";
+
 
 const app = express();
-const PORT = 5000;
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Server is running" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`Server running on http://localhost:${env.port} [${env.nodeEnv}]`);
 });
 
