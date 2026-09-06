@@ -4,9 +4,12 @@ import { connectDB } from "./config/db";
 import { log } from "console";
 import { errorHandler } from "./middlewares/errorHandle";
 import { AppError } from "./utils/AppError";
+import { validate } from "./middlewares/validate";
+import { registerSchema } from "./validators/auth.validator";
 
 
 const app = express();
+app.use(express.json())
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Server is running" });
@@ -14,6 +17,10 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/test-error", (req: Request, res: Response, next) => {
   next(new AppError("This is a test error", 400));
+});
+
+app.post("/test-validation", validate(registerSchema), (req: Request, res: Response) => {
+  res.json({ success: true, data: req.body });
 });
 
 
