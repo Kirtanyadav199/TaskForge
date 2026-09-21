@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError";
 import { RegisterInput } from "../validators/auth.validator";
+import { generateAccessToken } from "../utils/generateToken";
+import { LoginInput } from "../validators/auth.validator";
 
 export const register = async (
   req: Request<{}, {}, RegisterInput>,
@@ -24,6 +26,43 @@ export const register = async (
         id: user._id,
         name: user.name,
         email: user.email,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const login = async (
+  req: Request<{}, {}, LoginInput>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!isPasswordCorrect) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    const accessToken = generateAccessToken(user._id.toString());
+
+    res.status(200).json({
+      success: true,
+      data: {
+        accessToken,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
       },
     });
   } catch (error) {

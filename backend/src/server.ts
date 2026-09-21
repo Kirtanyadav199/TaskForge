@@ -6,6 +6,7 @@ import { errorHandler } from "./middlewares/errorHandle";
 import { AppError } from "./utils/AppError";
 import { validate } from "./middlewares/validate";
 import { registerSchema } from "./validators/auth.validator";
+import router from "./routes/auth.routes";
 
 
 const app = express();
@@ -22,6 +23,9 @@ app.get("/test-error", (req: Request, res: Response, next) => {
 app.post("/test-validation", validate(registerSchema), (req: Request, res: Response) => {
   res.json({ success: true, data: req.body });
 });
+
+app.use("/api/auth",router);
+
 
 
 
