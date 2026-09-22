@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError";
 import { RegisterInput } from "../validators/auth.validator";
-import { generateAccessToken } from "../utils/generateToken";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateToken";
+import { env } from "../config/env";
 import { LoginInput } from "../validators/auth.validator";
+import { RefreshToken } from "../models/refreshToken.model";
 
 export const register = async (
   req: Request<{}, {}, RegisterInput>,
@@ -52,7 +54,16 @@ export const login = async (
       throw new AppError("Invalid email or password", 401);
     }
 
-    const accessToken = generateAccessToken(user._id.toString());
+    const userId = user._id.toString();
+    const accessToken = generateAccessToken(userId);
+    const refreshToken = await generateRefreshToken(userId);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: env.nodeEnv === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       success: true,
@@ -69,3 +80,53 @@ export const login = async (
     next(error);
   }
 };
+
+
+export const refresh = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const incomingToken = req.cookies.refreshToken;
+
+    if (!incomingToken) {
+      throw new AppError("Refresh token missing", 401);
+    }
+
+    const storedToken = await RefreshToken.findOne({
+      token: incomingToken,
+      isRevoked: false,
+    });
+
+    if (!storedToken) {
+      throw new AppError("Invalid refresh token", 401);
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      throw new AppError("Refresh token expired", 401);
+    }
+
+    storedToken.isRevoked = true;
+    await storedToken.save();
+
+    const userId = storedToken.userId.toString();
+    const newAccessToken = generateAccessToken(userId);
+    const newRefreshToken = await generateRefreshToken(userId);
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: env.nodeEnv === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { accessToken: newAccessToken },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

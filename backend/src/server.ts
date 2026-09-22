@@ -7,10 +7,14 @@ import { AppError } from "./utils/AppError";
 import { validate } from "./middlewares/validate";
 import { registerSchema } from "./validators/auth.validator";
 import router from "./routes/auth.routes";
+import cookieParser from "cookie-parser";
+
+
 
 
 const app = express();
 app.use(express.json())
+app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Server is running" });
@@ -26,7 +30,11 @@ app.post("/test-validation", validate(registerSchema), (req: Request, res: Respo
 
 app.use("/api/auth",router);
 
+import { authenticate } from "./middlewares/authenticate";
 
+app.get("/api/protected-test", authenticate, (req: Request, res: Response) => {
+  res.json({ success: true, message: "You are authenticated!", user: req.user });
+});
 
 
 app.use(errorHandler);
