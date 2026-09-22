@@ -8,6 +8,7 @@ import { validate } from "./middlewares/validate";
 import { registerSchema } from "./validators/auth.validator";
 import router from "./routes/auth.routes";
 import cookieParser from "cookie-parser";
+import organizationRoutes from "./routes/organization.routes";
 
 
 
@@ -29,12 +30,8 @@ app.post("/test-validation", validate(registerSchema), (req: Request, res: Respo
 });
 
 app.use("/api/auth",router);
+app.use("/api/organizations", organizationRoutes);
 
-import { authenticate } from "./middlewares/authenticate";
-
-app.get("/api/protected-test", authenticate, (req: Request, res: Response) => {
-  res.json({ success: true, message: "You are authenticated!", user: req.user });
-});
 
 
 app.use(errorHandler);
