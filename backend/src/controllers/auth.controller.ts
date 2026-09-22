@@ -130,3 +130,32 @@ export const refresh = async (
   }
 };
 
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const incomingToken = req.cookies.refreshToken;
+
+    if (incomingToken) {
+      await RefreshToken.updateOne(
+        { token: incomingToken },
+        { isRevoked: true }
+      );
+    }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.nodeEnv === "production",
+      sameSite: "strict",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
