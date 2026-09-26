@@ -4,6 +4,7 @@ import { authorize } from "../middlewares/authorize";
 import { validate } from "../middlewares/validate";
 import { createProjectSchema } from "../validators/project.validator";
 import { createProject, getProjects } from "../controllers/project.controller";
+import taskRoutes from "./task.routes";
 
 const router = Router({ mergeParams: true });
 
@@ -16,5 +17,6 @@ router.post(
 );
 
 router.get("/", authenticate, authorize("member"), getProjects);
+router.use("/:projectId/tasks", taskRoutes);
 
 export default router;
