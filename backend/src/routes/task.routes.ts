@@ -5,11 +5,20 @@ import { validate } from "../middlewares/validate";
 import { createTaskSchema, updateTaskSchema } from "../validators/task.validator";
 import { createTask, getTasks, updateTask } from "../controllers/task.controller";
 import commentRoutes from "./comment.routes";
+import { getTasksQuerySchema } from "../validators/task.validator";
+
+
 
 const router = Router({ mergeParams: true });
 
 router.post("/", authenticate, authorize("member"), validate(createTaskSchema), createTask);
-router.get("/", authenticate, authorize("member"), getTasks);
+router.get(
+  "/",
+  authenticate,
+  authorize("member"),
+  validate(getTasksQuerySchema, "query"),
+  getTasks
+);
 router.patch("/:taskId", authenticate, authorize("member"), validate(updateTaskSchema), updateTask);
 
 

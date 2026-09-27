@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Task } from "../models/task.model";
 import { CreateTaskInput, UpdateTaskInput } from "../validators/task.validator";
 import { AppError } from "../utils/AppError";
+import { GetTasksQuery } from "../validators/task.validator";
 
 export const createTask = async (
   req: Request<{ organizationId: string; projectId: string }, {}, CreateTaskInput>,
@@ -25,6 +26,8 @@ export const createTask = async (
   }
 };
 
+
+
 export const getTasks = async (
   req: Request<{ organizationId: string; projectId: string }>,
   res: Response,
@@ -32,10 +35,42 @@ export const getTasks = async (
 ) => {
   try {
     const { projectId } = req.params;
+    const {
+      status,
+      priority,
+      assigneeId,
+      search,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    } = req.query as unknown as GetTasksQuery;
 
-    const tasks = await Task.find({ projectId }).sort({ createdAt: -1 });
+    const filter: Record<string, any> = { projectId };
 
-    res.status(200).json({ success: true, data: tasks });
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (assigneeId) filter.assigneeId = assigneeId;
+    if (search) filter.title = { $regex: search, $options: "i" };
+
+    const skip = (page - 1) * limit;
+    const sort: Record<string, 1 | -1> = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+
+    const [tasks, totalCount] = await Promise.all([
+      Task.find(filter).sort(sort).skip(skip).limit(limit),
+      Task.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: tasks,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
     next(error);
   }
