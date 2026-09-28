@@ -9,7 +9,7 @@ import { registerSchema } from "./validators/auth.validator";
 import router from "./routes/auth.routes";
 import cookieParser from "cookie-parser";
 import organizationRoutes from "./routes/organization.routes";
-
+import notificationRoutes from "./routes/notification.routes";
 
 
 
@@ -32,7 +32,7 @@ app.post("/test-validation", validate(registerSchema), (req: Request, res: Respo
 app.use("/api/auth",router);
 app.use("/api/organizations", organizationRoutes);
 
-
+app.use("/api/notifications", notificationRoutes);
 
 app.use(errorHandler);
 

@@ -3,6 +3,29 @@ import { Task } from "../models/task.model";
 import { CreateTaskInput, UpdateTaskInput } from "../validators/task.validator";
 import { AppError } from "../utils/AppError";
 import { GetTasksQuery } from "../validators/task.validator";
+import { createNotification } from "../utils/notify";
+import { Types } from "mongoose";
+import mongoose from "mongoose";
+import { OrganizationMember } from "../models/organizationMember.model";
+
+const assertAssigneeIsMember = async (
+  assigneeId: string,
+  organizationId: string
+) => {
+  if (!mongoose.Types.ObjectId.isValid(assigneeId)) {
+    throw new AppError("Invalid assignee ID", 400);
+  }
+
+  const isMember = await OrganizationMember.exists({
+    userId: assigneeId,
+    organizationId,
+  });
+
+  if (!isMember) {
+    throw new AppError("Assignee must be a member of this organization", 400);
+  }
+};
+
 
 export const createTask = async (
   req: Request<{ organizationId: string; projectId: string }, {}, CreateTaskInput>,
@@ -12,6 +35,10 @@ export const createTask = async (
   try {
     const { organizationId, projectId } = req.params;
     const userId = req.user!.userId;
+
+    if (req.body.assigneeId) {
+  await assertAssigneeIsMember(req.body.assigneeId, organizationId);
+}
 
     const task = await Task.create({
       ...req.body,
@@ -76,13 +103,28 @@ export const getTasks = async (
   }
 };
 
+
+
 export const updateTask = async (
   req: Request<{ organizationId: string; projectId: string; taskId: string }, {}, UpdateTaskInput>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { taskId } = req.params;
+const { organizationId, taskId } = req.params;
+
+const existingTask = await Task.findOne({ _id: taskId, organizationId });
+if (!existingTask) {
+  throw new AppError("Task not found", 404);
+}
+
+if (req.body.assigneeId) {
+  await assertAssigneeIsMember(req.body.assigneeId, organizationId);
+}
+
+    const isNewAssignment =
+      req.body.assigneeId &&
+      req.body.assigneeId !== existingTask.assigneeId?.toString();
 
     const task = await Task.findByIdAndUpdate(
       taskId,
@@ -90,8 +132,13 @@ export const updateTask = async (
       { new: true, runValidators: true }
     );
 
-    if (!task) {
-      throw new AppError("Task not found", 404);
+    if (isNewAssignment && task) {
+      await createNotification(
+        req.body.assigneeId!,
+        "TASK_ASSIGNED",
+        `You have been assigned to task: "${task.title}"`,
+        task._id as Types.ObjectId
+      );
     }
 
     res.status(200).json({ success: true, data: task });
