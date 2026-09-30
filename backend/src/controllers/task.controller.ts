@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { Task } from "../models/task.model";
-import { CreateTaskInput, UpdateTaskInput } from "../validators/task.validator";
-import { AppError } from "../utils/AppError";
-import { GetTasksQuery } from "../validators/task.validator";
-import { createNotification } from "../utils/notify";
-import { Types } from "mongoose";
 import mongoose from "mongoose";
+import { Task } from "../models/task.model";
 import { OrganizationMember } from "../models/organizationMember.model";
+import { AppError } from "../utils/AppError";
+import { createNotification } from "../utils/notify";
+import { CreateTaskInput, UpdateTaskInput, GetTasksQuery } from "../validators/task.validator";
 
 const assertAssigneeIsMember = async (
   assigneeId: string,
@@ -26,7 +24,6 @@ const assertAssigneeIsMember = async (
   }
 };
 
-
 export const createTask = async (
   req: Request<{ organizationId: string; projectId: string }, {}, CreateTaskInput>,
   res: Response,
@@ -37,8 +34,8 @@ export const createTask = async (
     const userId = req.user!.userId;
 
     if (req.body.assigneeId) {
-  await assertAssigneeIsMember(req.body.assigneeId, organizationId);
-}
+      await assertAssigneeIsMember(req.body.assigneeId, organizationId);
+    }
 
     const task = await Task.create({
       ...req.body,
@@ -53,15 +50,13 @@ export const createTask = async (
   }
 };
 
-
-
 export const getTasks = async (
   req: Request<{ organizationId: string; projectId: string }>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { projectId } = req.params;
+    const { organizationId, projectId } = req.params;
     const {
       status,
       priority,
@@ -73,7 +68,7 @@ export const getTasks = async (
       sortOrder,
     } = req.query as unknown as GetTasksQuery;
 
-    const filter: Record<string, any> = { projectId };
+    const filter: Record<string, any> = { projectId, organizationId };
 
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
@@ -103,7 +98,25 @@ export const getTasks = async (
   }
 };
 
+export const getTaskById = async (
+  req: Request<{ organizationId: string; projectId: string; taskId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { organizationId, projectId, taskId } = req.params;
 
+    const task = await Task.findOne({ _id: taskId, organizationId, projectId });
+
+    if (!task) {
+      throw new AppError("Task not found", 404);
+    }
+
+    res.status(200).json({ success: true, data: task });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const updateTask = async (
   req: Request<{ organizationId: string; projectId: string; taskId: string }, {}, UpdateTaskInput>,
@@ -111,16 +124,16 @@ export const updateTask = async (
   next: NextFunction
 ) => {
   try {
-const { organizationId, taskId } = req.params;
+    const { organizationId, projectId, taskId } = req.params;
 
-const existingTask = await Task.findOne({ _id: taskId, organizationId });
-if (!existingTask) {
-  throw new AppError("Task not found", 404);
-}
+    const existingTask = await Task.findOne({ _id: taskId, organizationId, projectId });
+    if (!existingTask) {
+      throw new AppError("Task not found", 404);
+    }
 
-if (req.body.assigneeId) {
-  await assertAssigneeIsMember(req.body.assigneeId, organizationId);
-}
+    if (req.body.assigneeId) {
+      await assertAssigneeIsMember(req.body.assigneeId, organizationId);
+    }
 
     const isNewAssignment =
       req.body.assigneeId &&
@@ -137,11 +150,31 @@ if (req.body.assigneeId) {
         req.body.assigneeId!,
         "TASK_ASSIGNED",
         `You have been assigned to task: "${task.title}"`,
-        task._id as Types.ObjectId
+        task._id as mongoose.Types.ObjectId
       );
     }
 
     res.status(200).json({ success: true, data: task });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteTask = async (
+  req: Request<{ organizationId: string; projectId: string; taskId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { organizationId, projectId, taskId } = req.params;
+
+    const task = await Task.findOneAndDelete({ _id: taskId, organizationId, projectId });
+
+    if (!task) {
+      throw new AppError("Task not found", 404);
+    }
+
+    res.status(200).json({ success: true, message: "Task deleted" });
   } catch (error) {
     next(error);
   }
