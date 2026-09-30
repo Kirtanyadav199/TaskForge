@@ -8,4 +8,5 @@ export const env = {
   mongoUri: process.env.MONGO_URI || "",
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "15m",
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 };
