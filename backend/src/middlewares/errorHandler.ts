@@ -38,7 +38,7 @@ export const errorHandler = (
     });
   }
 
-  console.error("Unexpected error:", err);
+  req.log.error({ err }, "Unexpected error");
 
   return res.status(500).json({
     success: false,

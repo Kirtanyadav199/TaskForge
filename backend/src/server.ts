@@ -12,6 +12,8 @@ import organizationRoutes from "./routes/organization.routes";
 import notificationRoutes from "./routes/notification.routes";
 import cors from "cors";
 import helmet from "helmet";
+import pinoHttp from "pino-http";
+import { logger } from "./config/logger";
 
 
 
@@ -23,6 +25,11 @@ app.use(cors({
     credentials: true,
   }));
   app.use(helmet());
+  app.use(cors({ origin: env.frontendUrl, credentials: true }));
+app.use(helmet());
+app.use(pinoHttp({ logger }));
+app.use(express.json());
+app.use(cookieParser());
 app.use(express.json())
 app.use(cookieParser());
 
@@ -48,10 +55,9 @@ app.use(errorHandler);
 
 const startServer = async()=>{
   await connectDB();
-  app.listen(env.port,()=>{
-    console.log(`Server running on http://localhost:${env.port} [${env.nodeEnv}]`);
-    
-  })
+app.listen(env.port, () => {
+  logger.info(`Server running on http://localhost:${env.port} [${env.nodeEnv}]`);
+});
 }
 
 startServer();
