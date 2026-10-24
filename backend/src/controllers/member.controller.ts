@@ -3,6 +3,8 @@ import { User } from "../models/user.model";
 import { OrganizationMember } from "../models/organizationMember.model";
 import { AppError } from "../utils/AppError";
 import { AddMemberInput } from "../validators/member.validator";
+import { hasMinimumRole } from "../utils/permissions";
+import { UpdateMemberRoleInput } from "../validators/member.validator";
 
 export const addMember = async (
   req: Request<{ organizationId: string }, {}, AddMemberInput>,
@@ -52,6 +54,81 @@ export const getMembers = async (
     );
 
     res.status(200).json({ success: true, data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+export const updateMemberRole = async (
+  req: Request<{ organizationId: string; userId: string }, {}, UpdateMemberRoleInput>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { organizationId, userId: targetUserId } = req.params;
+    const { role } = req.body;
+
+    const target = await OrganizationMember.findOne({
+      userId: targetUserId,
+      organizationId,
+    });
+
+    if (!target) {
+      throw new AppError("Member not found", 404);
+    }
+
+    if (target.role === "owner") {
+      throw new AppError("Owner's role cannot be changed", 400);
+    }
+
+    target.role = role;
+    await target.save();
+
+    res.status(200).json({ success: true, data: target });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeMember = async (
+  req: Request<{ organizationId: string; userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { organizationId, userId: targetUserId } = req.params;
+    const requesterId = req.user!.userId;
+
+    const [requester, target] = await Promise.all([
+      OrganizationMember.findOne({ userId: requesterId, organizationId }),
+      OrganizationMember.findOne({ userId: targetUserId, organizationId }),
+    ]);
+
+    if (!target) {
+      throw new AppError("Member not found", 404);
+    }
+
+    if (target.role === "owner") {
+      throw new AppError("Owner cannot be removed", 400);
+    }
+
+    const isSelfRemoval = requesterId === targetUserId;
+
+    if (!isSelfRemoval) {
+      if (!requester || !hasMinimumRole(requester.role, "admin")) {
+        throw new AppError("Insufficient permissions", 403);
+      }
+      if (target.role === "admin" && requester.role !== "owner") {
+        throw new AppError("Only the owner can remove an admin", 403);
+      }
+    }
+
+    await target.deleteOne();
+
+    res.status(200).json({ success: true, message: "Member removed" });
   } catch (error) {
     next(error);
   }

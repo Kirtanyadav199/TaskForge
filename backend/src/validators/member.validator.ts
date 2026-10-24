@@ -5,4 +5,10 @@ export const addMemberSchema = z.object({
   role: z.enum(["admin", "member"]).default("member"),
 });
 
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(["admin", "member"]),
+});
+
+export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>;
+
 export type AddMemberInput = z.infer<typeof addMemberSchema>;

@@ -1,0 +1,87 @@
+Date : 2026-10-08 09:25:49
+Directory : d:\Backend\TaskForge
+Total : 48 files,  4282 codes, 0 comments, 303 blanks, all 4585 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |          4 |      2,732 |          0 |          4 |      2,736 |
+| TypeScript         |         43 |      1,535 |          0 |        299 |      1,834 |
+| JSON with Comments |          1 |         15 |          0 |          0 |         15 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                    | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                       |         48 |      4,282 |          0 |        303 |      4,585 |
+| . (Files)                                                               |          2 |        296 |          0 |          2 |        298 |
+| backend                                                                 |         46 |      3,986 |          0 |        301 |      4,287 |
+| backend (Files)                                                         |          3 |      2,451 |          0 |          2 |      2,453 |
+| backend\src                                                             |         43 |      1,535 |          0 |        299 |      1,834 |
+| backend\src (Files)                                                     |          2 |         44 |          0 |         18 |         62 |
+| backend\src\config                                                      |          2 |         21 |          0 |          3 |         24 |
+| backend\src\controllers                                                 |          8 |        751 |          0 |        142 |        893 |
+| backend\src\middlewares                                                 |          5 |        132 |          0 |         23 |        155 |
+| backend\src\models                                                      |          8 |        338 |          0 |         37 |        375 |
+| backend\src\routes                                                      |          8 |        121 |          0 |         45 |        166 |
+| backend\src\types                                                       |          1 |         11 |          0 |          2 |         13 |
+| backend\src\utils                                                       |          4 |         52 |          0 |         14 |         66 |
+| backend\src\validators                                                  |          5 |         65 |          0 |         15 |         80 |
++-------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                | language           | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| d:\Backend\TaskForge\backend\package-lock.json                          | JSON               |      2,398 |          0 |          1 |      2,399 |
+| d:\Backend\TaskForge\backend\package.json                               | JSON               |         38 |          0 |          1 |         39 |
+| d:\Backend\TaskForge\backend\src\config\db.ts                           | TypeScript         |         11 |          0 |          1 |         12 |
+| d:\Backend\TaskForge\backend\src\config\env.ts                          | TypeScript         |         10 |          0 |          2 |         12 |
+| d:\Backend\TaskForge\backend\src\controllers\auth.controller.ts         | TypeScript         |        154 |          0 |         28 |        182 |
+| d:\Backend\TaskForge\backend\src\controllers\comment.controller.ts      | TypeScript         |         84 |          0 |         15 |         99 |
+| d:\Backend\TaskForge\backend\src\controllers\dashboard.controller.ts    | TypeScript         |         51 |          0 |          6 |         57 |
+| d:\Backend\TaskForge\backend\src\controllers\member.controller.ts       | TypeScript         |        110 |          0 |         25 |        135 |
+| d:\Backend\TaskForge\backend\src\controllers\notification.controller.ts | TypeScript         |         34 |          0 |          6 |         40 |
+| d:\Backend\TaskForge\backend\src\controllers\organization.controller.ts | TypeScript         |         76 |          0 |         16 |         92 |
+| d:\Backend\TaskForge\backend\src\controllers\project.controller.ts      | TypeScript         |         89 |          0 |         18 |        107 |
+| d:\Backend\TaskForge\backend\src\controllers\task.controller.ts         | TypeScript         |        153 |          0 |         28 |        181 |
+| d:\Backend\TaskForge\backend\src\index.ts                               | TypeScript         |          2 |          0 |          2 |          4 |
+| d:\Backend\TaskForge\backend\src\middlewares\authenticate.ts            | TypeScript         |         28 |          0 |          6 |         34 |
+| d:\Backend\TaskForge\backend\src\middlewares\authorize.ts               | TypeScript         |         28 |          0 |          6 |         34 |
+| d:\Backend\TaskForge\backend\src\middlewares\errorHandler.ts            | TypeScript         |         41 |          0 |          6 |         47 |
+| d:\Backend\TaskForge\backend\src\middlewares\rateLimiter.ts             | TypeScript         |         11 |          0 |          1 |         12 |
+| d:\Backend\TaskForge\backend\src\middlewares\validate.ts                | TypeScript         |         24 |          0 |          4 |         28 |
+| d:\Backend\TaskForge\backend\src\models\comment.model.ts                | TypeScript         |         32 |          0 |          4 |         36 |
+| d:\Backend\TaskForge\backend\src\models\notification.model.ts           | TypeScript         |         44 |          0 |          5 |         49 |
+| d:\Backend\TaskForge\backend\src\models\organization.model.ts           | TypeScript         |         28 |          0 |          3 |         31 |
+| d:\Backend\TaskForge\backend\src\models\organizationMember.model.ts     | TypeScript         |         39 |          0 |          5 |         44 |
+| d:\Backend\TaskForge\backend\src\models\project.model.ts                | TypeScript         |         37 |          0 |          4 |         41 |
+| d:\Backend\TaskForge\backend\src\models\refreshToken.model.ts           | TypeScript         |         38 |          0 |          4 |         42 |
+| d:\Backend\TaskForge\backend\src\models\task.model.ts                   | TypeScript         |         72 |          0 |          5 |         77 |
+| d:\Backend\TaskForge\backend\src\models\user.model.ts                   | TypeScript         |         48 |          0 |          7 |         55 |
+| d:\Backend\TaskForge\backend\src\routes\auth.routes.ts                  | TypeScript         |         16 |          0 |          7 |         23 |
+| d:\Backend\TaskForge\backend\src\routes\comment.routes.ts               | TypeScript         |         12 |          0 |          4 |         16 |
+| d:\Backend\TaskForge\backend\src\routes\dashboard.routes.ts             | TypeScript         |          7 |          0 |          3 |         10 |
+| d:\Backend\TaskForge\backend\src\routes\member.routes.ts                | TypeScript         |         20 |          0 |          6 |         26 |
+| d:\Backend\TaskForge\backend\src\routes\notification.routes.ts          | TypeScript         |          7 |          0 |          3 |         10 |
+| d:\Backend\TaskForge\backend\src\routes\organization.routes.ts          | TypeScript         |         16 |          0 |          8 |         24 |
+| d:\Backend\TaskForge\backend\src\routes\project.routes.ts               | TypeScript         |         21 |          0 |          5 |         26 |
+| d:\Backend\TaskForge\backend\src\routes\task.routes.ts                  | TypeScript         |         22 |          0 |          9 |         31 |
+| d:\Backend\TaskForge\backend\src\server.ts                              | TypeScript         |         42 |          0 |         16 |         58 |
+| d:\Backend\TaskForge\backend\src\types\express.d.ts                     | TypeScript         |         11 |          0 |          2 |         13 |
+| d:\Backend\TaskForge\backend\src\utils\AppError.ts                      | TypeScript         |         10 |          0 |          2 |         12 |
+| d:\Backend\TaskForge\backend\src\utils\generateToken.ts                 | TypeScript         |         20 |          0 |          9 |         29 |
+| d:\Backend\TaskForge\backend\src\utils\notify.ts                        | TypeScript         |         10 |          0 |          1 |         11 |
+| d:\Backend\TaskForge\backend\src\utils\permissions.ts                   | TypeScript         |         12 |          0 |          2 |         14 |
+| d:\Backend\TaskForge\backend\src\validators\auth.validator.ts           | TypeScript         |         12 |          0 |          4 |         16 |
+| d:\Backend\TaskForge\backend\src\validators\comment.validator.ts        | TypeScript         |          5 |          0 |          2 |          7 |
+| d:\Backend\TaskForge\backend\src\validators\member.validator.ts         | TypeScript         |         10 |          0 |          4 |         14 |
+| d:\Backend\TaskForge\backend\src\validators\project.validator.ts        | TypeScript         |          7 |          0 |          1 |          8 |
+| d:\Backend\TaskForge\backend\src\validators\task.validator.ts           | TypeScript         |         31 |          0 |          4 |         35 |
+| d:\Backend\TaskForge\backend\tsconfig.json                              | JSON with Comments |         15 |          0 |          0 |         15 |
+| d:\Backend\TaskForge\package-lock.json                                  | JSON               |        289 |          0 |          1 |        290 |
+| d:\Backend\TaskForge\package.json                                       | JSON               |          7 |          0 |          1 |          8 |
+| Total                                                                   |                    |      4,282 |          0 |        303 |      4,585 |
++-------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
