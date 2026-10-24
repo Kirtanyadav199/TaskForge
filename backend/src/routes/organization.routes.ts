@@ -5,6 +5,7 @@ import { createOrganization, deleteOrganization, getOrganizations, updateOrganiz
 import projectRoutes from "./project.routes";
 import memberRoutes from "./member.routes"; 
 import dashboardRoutes from "./dashboard.routes";
+import activityRoutes from "./activity.routes";
 
 
 const router = Router();
@@ -17,6 +18,8 @@ router.use("/:organizationId/members", memberRoutes);
 
 
 router.use("/:organizationId/dashboard", dashboardRoutes);
+
+router.use("/:organizationId/activity", activityRoutes);
 
 router.get("/", authenticate, getOrganizations);
 router.patch("/:organizationId", authenticate, authorize("owner"), updateOrganization);

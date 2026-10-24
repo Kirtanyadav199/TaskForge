@@ -5,6 +5,7 @@ import { OrganizationMember } from "../models/organizationMember.model";
 import { AppError } from "../utils/AppError";
 import { createNotification } from "../utils/notify";
 import { CreateTaskInput, UpdateTaskInput, GetTasksQuery } from "../validators/task.validator";
+import { logActivity } from "../utils/logActivity";
 
 const assertAssigneeIsMember = async (
   assigneeId: string,
@@ -43,6 +44,15 @@ export const createTask = async (
       organizationId,
       createdBy: userId,
     });
+
+    await logActivity({
+  organizationId,
+  projectId,
+  actorId: userId,
+  action: "TASK_CREATED",
+  targetId: task._id as mongoose.Types.ObjectId,
+  message: `created task "${task.title}"`,
+});
 
     res.status(201).json({ success: true, data: task });
   } catch (error) {
@@ -125,6 +135,7 @@ export const updateTask = async (
 ) => {
   try {
     const { organizationId, projectId, taskId } = req.params;
+    const userId = req.user!.userId;
 
     const existingTask = await Task.findOne({ _id: taskId, organizationId, projectId });
     if (!existingTask) {
@@ -154,6 +165,44 @@ export const updateTask = async (
       );
     }
 
+    if (task) {
+  const statusChanged =
+    req.body.status && req.body.status !== existingTask.status;
+
+  if (statusChanged) {
+    await logActivity({
+      organizationId,
+      projectId,
+      actorId: userId,
+      action: "TASK_STATUS_CHANGED",
+      targetId: task._id as mongoose.Types.ObjectId,
+      message: `moved "${task.title}" from ${existingTask.status} to ${task.status}`,
+    });
+  }
+
+  if (isNewAssignment) {
+    await logActivity({
+      organizationId,
+      projectId,
+      actorId: userId,
+      action: "TASK_ASSIGNED",
+      targetId: task._id as mongoose.Types.ObjectId,
+      message: `assigned "${task.title}" to a team member`,
+    });
+  }
+
+  if (!statusChanged && !isNewAssignment) {
+    await logActivity({
+      organizationId,
+      projectId,
+      actorId: userId,
+      action: "TASK_UPDATED",
+      targetId: task._id as mongoose.Types.ObjectId,
+      message: `updated task "${task.title}"`,
+    });
+  }
+}
+
     res.status(200).json({ success: true, data: task });
   } catch (error) {
     next(error);
@@ -173,6 +222,14 @@ export const deleteTask = async (
     if (!task) {
       throw new AppError("Task not found", 404);
     }
+
+    await logActivity({
+  organizationId,
+  projectId,
+  actorId: req.user!.userId,
+  action: "TASK_DELETED",
+  message: `deleted task "${task.title}"`,
+});
 
     res.status(200).json({ success: true, message: "Task deleted" });
   } catch (error) {

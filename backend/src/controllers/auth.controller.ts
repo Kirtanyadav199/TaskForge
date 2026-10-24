@@ -6,6 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/generateToke
 import { env } from "../config/env";
 import { LoginInput } from "../validators/auth.validator";
 import { RefreshToken } from "../models/refreshToken.model";
+import { logActivity } from "../utils/logActivity";
 
 export const register = async (
   req: Request<{}, {}, RegisterInput>,

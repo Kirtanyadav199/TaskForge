@@ -5,6 +5,7 @@ import { Task } from "../models/task.model";
 import { createNotification } from "../utils/notify";
 import { Types } from "mongoose";
 import { AppError } from "../utils/AppError";
+import { logActivity } from "../utils/logActivity";
 
 export const createComment = async (
   req: Request<{ taskId: string }, {}, CreateCommentInput>,

@@ -5,6 +5,7 @@ import { AppError } from "../utils/AppError";
 import { AddMemberInput } from "../validators/member.validator";
 import { hasMinimumRole } from "../utils/permissions";
 import { UpdateMemberRoleInput } from "../validators/member.validator";
+import { logActivity } from "../utils/logActivity";
 
 export const addMember = async (
   req: Request<{ organizationId: string }, {}, AddMemberInput>,
@@ -33,6 +34,14 @@ export const addMember = async (
       organizationId,
       role,
     });
+
+    await logActivity({
+  organizationId,
+  actorId: req.user!.userId,
+  action: "MEMBER_ADDED",
+  targetId: user._id,
+  message: `added ${user.name} as ${role}`,
+});
 
     res.status(201).json({ success: true, data: member });
   } catch (error) {
@@ -87,6 +96,16 @@ export const updateMemberRole = async (
     target.role = role;
     await target.save();
 
+    const targetUser = await User.findById(targetUserId).select("name");
+
+await logActivity({
+  organizationId,
+  actorId: req.user!.userId,
+  action: "MEMBER_ROLE_CHANGED",
+  targetId: target.userId,
+  message: `changed ${targetUser?.name ?? "a member"}'s role to ${role}`,
+});
+
     res.status(200).json({ success: true, data: target });
   } catch (error) {
     next(error);
@@ -127,6 +146,18 @@ export const removeMember = async (
     }
 
     await target.deleteOne();
+
+    const targetUser = await User.findById(targetUserId).select("name");
+
+await logActivity({
+  organizationId,
+  actorId: requesterId,
+  action: "MEMBER_REMOVED",
+  targetId: target.userId,
+  message: isSelfRemoval
+    ? `${targetUser?.name ?? "A member"} left the organization`
+    : `removed ${targetUser?.name ?? "a member"} from the organization`,
+});
 
     res.status(200).json({ success: true, message: "Member removed" });
   } catch (error) {

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Project } from "../models/project.model";
 import { CreateProjectInput } from "../validators/project.validator";
 import { AppError } from "../utils/AppError";
+import { logActivity } from "../utils/logActivity";
 
 export const createProject = async (
   req: Request<{ organizationId: string }, {}, CreateProjectInput>,
@@ -19,6 +20,15 @@ export const createProject = async (
       organizationId,
       createdBy: userId,
     });
+
+    await logActivity({
+  organizationId,
+  projectId: project._id,
+  actorId: userId,
+  action: "PROJECT_CREATED",
+  targetId: project._id,
+  message: `created project "${project.name}"`,
+});
 
     res.status(201).json({ success: true, data: project });
   } catch (error) {
@@ -99,6 +109,13 @@ export const deleteProject = async (
     if (!project) {
       throw new AppError("Project not found", 404);
     }
+
+    await logActivity({
+  organizationId,
+  actorId: req.user!.userId,
+  action: "PROJECT_DELETED",
+  message: `deleted project "${project.name}"`,
+});
 
     res.status(200).json({ success: true, message: "Project deleted" });
   } catch (error) {

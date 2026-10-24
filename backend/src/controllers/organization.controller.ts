@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Organization } from "../models/organization.model";
 import { OrganizationMember } from "../models/organizationMember.model";
 import { AppError } from "../utils/AppError";
-
+import { logActivity } from "../utils/logActivity";
 
 export const createOrganization = async (
   req: Request,

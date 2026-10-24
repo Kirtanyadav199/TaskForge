@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { Task } from "../models/task.model";
+import { logActivity } from "../utils/logActivity";
 
 export const getDashboardStats = async (
   req: Request<{ organizationId: string }>,

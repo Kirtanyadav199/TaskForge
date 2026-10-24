@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Notification } from "../models/notification.model";
+import { logActivity } from "../utils/logActivity";
 
 export const getNotifications = async (
   req: Request,
