@@ -7,7 +7,7 @@ import { logActivity } from "../utils/logActivity";
 export const createOrganization = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { name } = req.body;
@@ -33,13 +33,13 @@ export const createOrganization = async (
 export const getOrganizations = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user!.userId;
 
     const memberships = await OrganizationMember.find({ userId }).populate(
-      "organizationId"
+      "organizationId",
     );
 
     const organizations = memberships.map((m) => m.organizationId);
@@ -53,7 +53,7 @@ export const getOrganizations = async (
 export const updateOrganization = async (
   req: Request<{ organizationId: string }, {}, { name?: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId } = req.params;
@@ -61,7 +61,7 @@ export const updateOrganization = async (
     const organization = await Organization.findByIdAndUpdate(
       organizationId,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!organization) {
@@ -77,7 +77,7 @@ export const updateOrganization = async (
 export const deleteOrganization = async (
   req: Request<{ organizationId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId } = req.params;

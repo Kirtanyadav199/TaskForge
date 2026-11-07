@@ -45,3 +45,67 @@ export const createAuthenticatedUser = async (
     creds,
   };
 };
+
+
+export const secondUser = { name: "Second User", email: "second@example.com" };
+export const thirdUser = { name: "Third User", email: "third@example.com" };
+
+export const bearer = (token: string) => `Bearer ${token}`;
+
+const mustBe = (res: request.Response, status: number, what: string) => {
+  if (res.status !== status) {
+    throw new Error(
+      `Test setup failed (${what}): got ${res.status} ${JSON.stringify(res.body)}`
+    );
+  }
+};
+
+export const createOrg = async (token: string, name = "Acme Inc") => {
+  const res = await request(app)
+    .post("/api/organizations")
+    .set("Authorization", bearer(token))
+    .send({ name });
+  mustBe(res, 201, "create org");
+  return res.body.data._id as string;
+};
+
+export const addMember = (
+  token: string,
+  orgId: string,
+  email: string,
+  role: "admin" | "member" = "member"
+) =>
+  request(app)
+    .post(`/api/organizations/${orgId}/members`)
+    .set("Authorization", bearer(token))
+    .send({ email, role });
+
+export const createProject = async (
+  token: string,
+  orgId: string,
+  name = "Website Redesign"
+) => {
+  const res = await request(app)
+    .post(`/api/organizations/${orgId}/projects`)
+    .set("Authorization", bearer(token))
+    .send({ name });
+  mustBe(res, 201, "create project");
+  return res.body.data._id as string;
+};
+
+export const tasksUrl = (orgId: string, projectId: string) =>
+  `/api/organizations/${orgId}/projects/${projectId}/tasks`;
+
+export const createTask = async (
+  token: string,
+  orgId: string,
+  projectId: string,
+  body: Record<string, unknown> = { title: "Write tests" }
+) => {
+  const res = await request(app)
+    .post(tasksUrl(orgId, projectId))
+    .set("Authorization", bearer(token))
+    .send(body);
+  mustBe(res, 201, "create task");
+  return res.body.data._id as string;
+};

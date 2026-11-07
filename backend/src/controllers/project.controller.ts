@@ -7,7 +7,7 @@ import { logActivity } from "../utils/logActivity";
 export const createProject = async (
   req: Request<{ organizationId: string }, {}, CreateProjectInput>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId } = req.params;
@@ -22,13 +22,13 @@ export const createProject = async (
     });
 
     await logActivity({
-  organizationId,
-  projectId: project._id,
-  actorId: userId,
-  action: "PROJECT_CREATED",
-  targetId: project._id,
-  message: `created project "${project.name}"`,
-});
+      organizationId,
+      projectId: project._id,
+      actorId: userId,
+      action: "PROJECT_CREATED",
+      targetId: project._id,
+      message: `created project "${project.name}"`,
+    });
 
     res.status(201).json({ success: true, data: project });
   } catch (error) {
@@ -39,12 +39,14 @@ export const createProject = async (
 export const getProjects = async (
   req: Request<{ organizationId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId } = req.params;
 
-    const projects = await Project.find({ organizationId }).sort({ createdAt: -1 });
+    const projects = await Project.find({ organizationId }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({ success: true, data: projects });
   } catch (error) {
@@ -55,7 +57,7 @@ export const getProjects = async (
 export const getProjectById = async (
   req: Request<{ organizationId: string; projectId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId, projectId } = req.params;
@@ -73,9 +75,13 @@ export const getProjectById = async (
 };
 
 export const updateProject = async (
-  req: Request<{ organizationId: string; projectId: string }, {}, Partial<CreateProjectInput>>,
+  req: Request<
+    { organizationId: string; projectId: string },
+    {},
+    Partial<CreateProjectInput>
+  >,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId, projectId } = req.params;
@@ -83,7 +89,7 @@ export const updateProject = async (
     const project = await Project.findOneAndUpdate(
       { _id: projectId, organizationId },
       { $set: req.body },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!project) {
@@ -99,23 +105,26 @@ export const updateProject = async (
 export const deleteProject = async (
   req: Request<{ organizationId: string; projectId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { organizationId, projectId } = req.params;
 
-    const project = await Project.findOneAndDelete({ _id: projectId, organizationId });
+    const project = await Project.findOneAndDelete({
+      _id: projectId,
+      organizationId,
+    });
 
     if (!project) {
       throw new AppError("Project not found", 404);
     }
 
     await logActivity({
-  organizationId,
-  actorId: req.user!.userId,
-  action: "PROJECT_DELETED",
-  message: `deleted project "${project.name}"`,
-});
+      organizationId,
+      actorId: req.user!.userId,
+      action: "PROJECT_DELETED",
+      message: `deleted project "${project.name}"`,
+    });
 
     res.status(200).json({ success: true, message: "Project deleted" });
   } catch (error) {

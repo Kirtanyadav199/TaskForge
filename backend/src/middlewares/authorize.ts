@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { OrganizationMember, OrgRole } from "../models/organizationMember.model";
 import { hasMinimumRole } from "../utils/permissions";
 import { AppError } from "../utils/AppError";
@@ -8,10 +9,14 @@ export const authorize =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.params.organizationId;
+      const organizationId = req.params.organizationId as string;
 
       if (!userId) {
         throw new AppError("Not authenticated", 401);
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(organizationId)) {
+        throw new AppError("Invalid organization ID", 400);
       }
 
       const membership = await OrganizationMember.findOne({

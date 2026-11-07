@@ -10,7 +10,7 @@ import { logActivity } from "../utils/logActivity";
 export const createComment = async (
   req: Request<{ taskId: string }, {}, CreateCommentInput>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { taskId } = req.params;
@@ -25,7 +25,7 @@ export const createComment = async (
         task.createdBy,
         "NEW_COMMENT",
         `New comment on task: "${task.title}"`,
-        task._id as Types.ObjectId
+        task._id as Types.ObjectId,
       );
     }
 
@@ -38,7 +38,7 @@ export const createComment = async (
 export const getComments = async (
   req: Request<{ taskId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { taskId } = req.params;
@@ -56,7 +56,7 @@ export const getComments = async (
 export const updateComment = async (
   req: Request<{ taskId: string; commentId: string }, {}, { content: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { taskId, commentId } = req.params;
@@ -65,7 +65,7 @@ export const updateComment = async (
     const comment = await Comment.findOneAndUpdate(
       { _id: commentId, taskId, userId },
       { $set: { content: req.body.content } },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!comment) {
@@ -81,13 +81,17 @@ export const updateComment = async (
 export const deleteComment = async (
   req: Request<{ taskId: string; commentId: string }>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { taskId, commentId } = req.params;
     const userId = req.user!.userId;
 
-    const comment = await Comment.findOneAndDelete({ _id: commentId, taskId, userId });
+    const comment = await Comment.findOneAndDelete({
+      _id: commentId,
+      taskId,
+      userId,
+    });
 
     if (!comment) {
       throw new AppError("Comment not found or you are not the author", 404);
