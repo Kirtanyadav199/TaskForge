@@ -10,7 +10,7 @@ const router = Router({ mergeParams: true });
 
 router.post("/", authenticate, authorize("member"), validate(createCommentSchema), createComment);
 router.get("/", authenticate, authorize("member"), getComments);
-router.patch("/:commentId", authenticate, authorize("member"), updateComment);
+router.patch("/:commentId", authenticate, authorize("member"),validate(createCommentSchema), updateComment);
 router.delete("/:commentId", authenticate, authorize("member"), deleteComment);
 
 export default router;

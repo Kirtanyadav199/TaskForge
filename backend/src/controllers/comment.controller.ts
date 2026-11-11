@@ -1,31 +1,43 @@
 import { Request, Response, NextFunction } from "express";
-import { Comment } from "../models/comment.model";
-import { CreateCommentInput } from "../validators/comment.validator";
-import { Task } from "../models/task.model";
-import { createNotification } from "../utils/notify";
 import { Types } from "mongoose";
+import { Comment } from "../models/comment.model";
+import { Task } from "../models/task.model";
 import { AppError } from "../utils/AppError";
-import { logActivity } from "../utils/logActivity";
+import { createNotification } from "../utils/notify";
+import { CreateCommentInput } from "../validators/comment.validator";
+
+type TaskScope = { organizationId: string; projectId: string; taskId: string };
+
+// The task must belong to BOTH the org and project in the URL.
+const findTaskInScope = async ({ organizationId, projectId, taskId }: TaskScope) => {
+  const task = await Task.findOne({ _id: taskId, organizationId, projectId });
+  if (!task) {
+    throw new AppError("Task not found", 404);
+  }
+  return task;
+};
 
 export const createComment = async (
-  req: Request<{ taskId: string }, {}, CreateCommentInput>,
+  req: Request<TaskScope, {}, CreateCommentInput>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const { taskId } = req.params;
-    const { content } = req.body;
     const userId = req.user!.userId;
+    const task = await findTaskInScope(req.params);
 
-    const comment = await Comment.create({ content, taskId, userId });
+    const comment = await Comment.create({
+      content: req.body.content,
+      taskId: task._id,
+      userId,
+    });
 
-    const task = await Task.findById(taskId);
-    if (task && task.createdBy.toString() !== userId) {
+    if (task.createdBy.toString() !== userId) {
       await createNotification(
         task.createdBy,
         "NEW_COMMENT",
         `New comment on task: "${task.title}"`,
-        task._id as Types.ObjectId,
+        task._id as Types.ObjectId
       );
     }
 
@@ -36,14 +48,14 @@ export const createComment = async (
 };
 
 export const getComments = async (
-  req: Request<{ taskId: string }>,
+  req: Request<TaskScope>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const { taskId } = req.params;
+    const task = await findTaskInScope(req.params);
 
-    const comments = await Comment.find({ taskId })
+    const comments = await Comment.find({ taskId: task._id })
       .populate("userId", "name email")
       .sort({ createdAt: 1 });
 
@@ -54,18 +66,18 @@ export const getComments = async (
 };
 
 export const updateComment = async (
-  req: Request<{ taskId: string; commentId: string }, {}, { content: string }>,
+  req: Request<TaskScope & { commentId: string }, {}, CreateCommentInput>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const { taskId, commentId } = req.params;
     const userId = req.user!.userId;
+    const task = await findTaskInScope(req.params);
 
     const comment = await Comment.findOneAndUpdate(
-      { _id: commentId, taskId, userId },
+      { _id: req.params.commentId, taskId: task._id, userId },
       { $set: { content: req.body.content } },
-      { returnDocument: "after", runValidators: true },
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!comment) {
@@ -79,17 +91,17 @@ export const updateComment = async (
 };
 
 export const deleteComment = async (
-  req: Request<{ taskId: string; commentId: string }>,
+  req: Request<TaskScope & { commentId: string }>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const { taskId, commentId } = req.params;
     const userId = req.user!.userId;
+    const task = await findTaskInScope(req.params);
 
     const comment = await Comment.findOneAndDelete({
-      _id: commentId,
-      taskId,
+      _id: req.params.commentId,
+      taskId: task._id,
       userId,
     });
 
