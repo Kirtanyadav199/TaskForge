@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Notification } from "../models/notification.model";
 import { logActivity } from "../utils/logActivity";
+import { AppError } from "../utils/AppError";
 
 export const getNotifications = async (
   req: Request,
@@ -29,12 +30,16 @@ export const markAsRead = async (
     const { notificationId } = req.params;
     const userId = req.user!.userId;
 
-    await Notification.updateOne(
-      { _id: notificationId, userId },
-      { isRead: true }
-    );
+   const result = await Notification.updateOne(
+  { _id: notificationId, userId },
+  { isRead: true }
+);
 
-    res.status(200).json({ success: true, message: "Marked as read" });
+if (result.matchedCount === 0) {
+  throw new AppError("Notification not found", 404);
+}
+
+res.status(200).json({ success: true, message: "Marked as read" });
   } catch (error) {
     next(error);
   }
