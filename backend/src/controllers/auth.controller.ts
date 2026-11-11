@@ -61,7 +61,7 @@ export const login = async (
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: env.nodeEnv === "production",
+      secure: env.cookieSecure,
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -117,7 +117,7 @@ export const refresh = async (
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: env.nodeEnv === "production",
+      secure: env.cookieSecure,
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -148,7 +148,7 @@ export const logout = async (
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: env.nodeEnv === "production",
+      secure: env.cookieSecure,
       sameSite: "strict",
     });
 

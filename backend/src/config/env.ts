@@ -9,4 +9,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "15m",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  cookieSecure: process.env.COOKIE_SECURE
+  ? process.env.COOKIE_SECURE === "true"
+  : process.env.NODE_ENV === "production",
 };

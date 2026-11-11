@@ -13,6 +13,7 @@ import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { logger } from "./config/logger";
+import mongoose from "mongoose";
 
 
 
@@ -31,7 +32,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.json())
 app.use(cookieParser());
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: (req) => req.url === "/health" },
+  })
+);
 
+app.get("/health", (req, res) => {
+  const dbConnected = mongoose.connection.readyState === 1;
+  res.status(dbConnected ? 200 : 503).json({
+    status: dbConnected ? "ok" : "degraded",
+    db: dbConnected ? "connected" : "disconnected",
+  });
+});
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Server is running" });
