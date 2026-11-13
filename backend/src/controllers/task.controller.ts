@@ -61,7 +61,14 @@ export const createTask = async (
       targetId: task._id as mongoose.Types.ObjectId,
       message: `created task "${task.title}"`,
     });
-
+     if (task.assigneeId && task.assigneeId.toString() !== userId) {
+  await createNotification(
+    task.assigneeId,
+    "TASK_ASSIGNED",
+    `You have been assigned to task: "${task.title}"`,
+    task._id as mongoose.Types.ObjectId
+  );
+}
     res.status(201).json({ success: true, data: task });
   } catch (error) {
     next(error);
@@ -164,9 +171,10 @@ export const updateTask = async (
       await assertAssigneeIsMember(req.body.assigneeId, organizationId);
     }
 
-    const isNewAssignment =
-      req.body.assigneeId &&
-      req.body.assigneeId !== existingTask.assigneeId?.toString();
+  const isNewAssignment =
+  req.body.assigneeId &&
+  req.body.assigneeId !== existingTask.assigneeId?.toString() &&
+  req.body.assigneeId !== userId;
 
     const task = await Task.findByIdAndUpdate(
       taskId,

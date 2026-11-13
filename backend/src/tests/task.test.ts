@@ -261,4 +261,37 @@ describe("task search, filter and pagination", () => {
       .set("Authorization", bearer(owner.accessToken));
     expect(badStatus.status).toBe(400);
   });
+
+  it("notifies the assignee when a task is created with an assignee", async () => {
+  const { owner, orgId, projectId } = await setup();
+  const assignee = await createAuthenticatedUser(secondUser);
+  await addMember(owner.accessToken, orgId, secondUser.email);
+
+  await createTask(owner.accessToken, orgId, projectId, {
+    title: "Assigned at creation",
+    assigneeId: assignee.userId,
+  });
+
+  const res = await request(app)
+    .get("/api/notifications")
+    .set("Authorization", bearer(assignee.accessToken));
+
+  expect(res.body.data).toHaveLength(1);
+  expect(res.body.data[0].type).toBe("TASK_ASSIGNED");
+});
+
+it("does not notify you when you assign a task to yourself", async () => {
+  const { owner, orgId, projectId } = await setup();
+
+  await createTask(owner.accessToken, orgId, projectId, {
+    title: "My own task",
+    assigneeId: owner.userId,
+  });
+
+  const res = await request(app)
+    .get("/api/notifications")
+    .set("Authorization", bearer(owner.accessToken));
+
+  expect(res.body.data).toHaveLength(0);
+});
 });
